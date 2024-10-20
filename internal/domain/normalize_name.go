@@ -18,19 +18,22 @@ func RemoveDiacritics(input string) string {
 	return t
 }
 
-// NormalizeName standardizes the name by converting it to lowercase, removing diacritics, and preserving hyphens
+// NormalizeName standardizes the name by converting it to lowercase, removing diacritics,
+// and replacing special characters (except hyphens) with spaces. Apostrophes are removed and joined.
 func NormalizeName(name string) string {
 	// Convert to lowercase and remove diacritics
 	normalized := strings.ToLower(RemoveDiacritics(name))
 
-	// Replace apostrophes with spaces (to handle cases like "O'Conner")
-	normalized = strings.ReplaceAll(normalized, "'", "")
-
-	// Keep hyphens, but remove other punctuation like apostrophes
+	// Replace all special characters (except hyphens) with spaces
 	var sb strings.Builder
 	for _, r := range normalized {
-		if unicode.IsLetter(r) || r == '-' || unicode.IsSpace(r) {
-			sb.WriteRune(r)
+		if unicode.IsLetter(r) || unicode.IsSpace(r) || r == '-' {
+			sb.WriteRune(r) // Keep letters, spaces, and hyphens
+		} else if r == '\'' {
+			// Skip apostrophes entirely (treat "O'Conner" as "OConner")
+			continue
+		} else {
+			sb.WriteRune(' ') // Replace other special characters with spaces
 		}
 	}
 

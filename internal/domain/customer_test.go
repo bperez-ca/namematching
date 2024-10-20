@@ -99,7 +99,7 @@ func TestNamesWithHyphens(t *testing.T) {
 
 func TestNamesWithApostrophes(t *testing.T) {
 	customer := NewCustomer("O'Conner", "oconner@example.com")
-	score := customer.MatchName("OConner") // The test should be with O Conner
+	score := customer.MatchName("O Conner")
 	assertMatchWithLogging(t, score, 1.0, "Handling apostrophes in 'O'Conner' vs 'O Conner'")
 }
 
@@ -151,4 +151,74 @@ func TestLongNamesWithSecondNameAsPrimary(t *testing.T) {
 	customer2 := NewCustomer("Jonathan Alexander Michael Robert William Doe", "jon@example.com")
 	score2 := customer2.MatchName("Michael Doe")
 	assertMatchWithLogging(t, score2, 0.8, "Very long name 'Jonathan Alexander Michael Robert William Doe' vs 'Michael Doe'")
+}
+
+func TestLongNamesWithPreferredNames(t *testing.T) {
+	customer := NewCustomer("Brayan Ferney Perez Moreno", "jon@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score, 0.8, "Very long name 'Brayan Ferney Perez Moreno' vs 'Brayan Perez'")
+
+	customer2 := NewCustomer("Brayan Ferney Perez Moreno", "jon@example.com")
+	score2 := customer2.MatchName("Ferney Perez")
+	assertMatchWithLogging(t, score2, 0.8, "Very long name 'Brayan Ferney Perez Moreno' vs 'Ferney Perez'")
+
+	customer3 := NewCustomer("Brayan Ferney Perez Moreno", "jon@example.com")
+	score3 := customer3.MatchName("Ferney Perez Moreno")
+	assertMatchWithLogging(t, score3, 0.8, "Very long name 'Brayan Ferney Perez Moreno' vs 'Ferney Perez Moreno'")
+
+	customer4 := NewCustomer("Brayan Ferney Perez Moreno", "jon@example.com")
+	score4 := customer4.MatchName("Brayan F. Perez")
+	assertMatchWithLogging(t, score4, 0.8, "Very long name 'Brayan Ferney Perez Moreno' vs 'Brayan F. Perez'")
+
+	customer5 := NewCustomer("Brayan Ferney Perez Moreno", "jon@example.com")
+	score5 := customer5.MatchName("Brayan Perez Moreno")
+	assertMatchWithLogging(t, score5, 0.8, "Very long name 'Brayan Ferney Perez Moreno' vs 'Brayan Perez Moreno'")
+
+	customer6 := NewCustomer("Brayan Ferney Perez-Moreno", "jon@example.com")
+	score6 := customer6.MatchName("Brayan Perez Moreno")
+	assertMatchWithLogging(t, score6, 0.8, "Very long name 'Brayan Ferney Perez-Moreno' vs 'Brayan Perez Moreno'")
+}
+
+func TestEmptyNameOrSpecialCharacters(t *testing.T) {
+	customer := NewCustomer("!!!", "brayan@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score, 0.0, "Special character-only name '!!!' vs 'Brayan Perez'")
+}
+
+func TestLongNameWithSpecialCharacters(t *testing.T) {
+	customer7 := NewCustomer("Brayan+Ferney Perez+Moreno", "jon@example.com")
+	score7 := customer7.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score7, 0.8, "Very long name 'Brayan+Ferney Perez+Moreno' vs 'Brayan Perez'")
+}
+
+func TestLongNameNotMatchingPhoneticallySimilar(t *testing.T) {
+	customer := NewCustomer("Byron Fernando Piedrahita Moreno", "jon@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertNoMatchWithLogging(t, score, 0.8, "Very long name 'Byron Fernando Piedrahita Moreno' vs 'Brayan Perez'")
+
+	customer2 := NewCustomer("Brian Piers", "jon@example.com")
+	score2 := customer2.MatchName("Brayan Perez")
+	assertNoMatchWithLogging(t, score2, 0.8, "Very long name 'Brian Piers' vs 'Brayan Perez'")
+
+	customer3 := NewCustomer("Bryan Paris", "jon@example.com")
+	score3 := customer3.MatchName("Brayan Perez")
+	assertNoMatchWithLogging(t, score3, 0.8, "Very long name 'Bryan Paris' vs 'Brayan Perez'")
+}
+
+func TestNameWithPercentageSign(t *testing.T) {
+	customer := NewCustomer("Brayan%Perez", "brayan@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score, 0.8, "Name with percentage sign 'Brayan%Perez' vs 'Brayan Perez'")
+}
+
+func TestNameWithDollarSign(t *testing.T) {
+	customer := NewCustomer("Brayan$Perez", "brayan@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score, 0.8, "Name with dollar sign 'Brayan$Perez' vs 'Brayan Perez'")
+}
+
+func TestLongNameWithVariousSpecialCharacters(t *testing.T) {
+	customer := NewCustomer("Brayan@#*!|~Ferney%$Perez@#Moreno", "brayan@example.com")
+	score := customer.MatchName("Brayan Perez")
+	assertMatchWithLogging(t, score, 0.8, "Very long name 'Brayan@#*!|~Ferney%$Perez@#Moreno' vs 'Brayan Perez'")
 }

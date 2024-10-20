@@ -5,17 +5,22 @@ import (
 	"strings"
 )
 
+// TokenizeName splits a name into tokens, replaces special characters with spaces, removes accents,
+// and ensures case-insensitive comparison.
 func TokenizeName(name string) []string {
-	// Normalize the name first (e.g., lowercase and remove diacritics)
-	normalized := NormalizeName(name)
-
 	// Replace hyphens and apostrophes with spaces
-	normalized = strings.ReplaceAll(normalized, "-", " ")
-	normalized = strings.ReplaceAll(normalized, "'", " ")
-	//fmt.Printf("Normalized Name '%s' -> '%s',\n", name, normalized)
-	// Use a regular expression to split based on spaces (including multiple spaces)
-	re := regexp.MustCompile(`\s+`)
-	tokens := re.Split(normalized, -1)
-	//fmt.Printf("Tokens Name '%s' -> '%s',\n", name, tokens)
+	name = strings.ReplaceAll(name, "-", " ")
+	name = strings.ReplaceAll(name, "'", " ")
+
+	// Remove accents and convert to lowercase for case-insensitive matching
+	name = NormalizeName(name)
+
+	// Replace all non-alphanumeric characters with spaces
+	re := regexp.MustCompile(`[^\w]`)
+	cleanedName := re.ReplaceAllString(name, " ")
+
+	// Split the cleaned name into tokens by spaces
+	tokens := strings.Fields(cleanedName)
+
 	return tokens
 }
