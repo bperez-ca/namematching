@@ -138,7 +138,17 @@ func TestTyposInDifferentPartsOfName(t *testing.T) {
 	score := customer.MatchName("Jonathan")
 	assertMatchWithLogging(t, score, 0.8, "Typo in first name 'Jonhathan' vs 'Jonathan'")
 
-	customer2 := NewCustomer("Doehn", "doe@example.com")
-	score2 := customer2.MatchName("Doe")
+	customer2 := NewCustomer("Perez", "doe@example.com")
+	score2 := customer2.MatchName("Peres")
 	assertMatchWithLogging(t, score2, 0.8, "Typo in last name 'Doehn' vs 'Doe'")
+}
+
+func TestLongNamesWithSecondNameAsPrimary(t *testing.T) {
+	customer := NewCustomer("Jonathan Alexander Michael Robert William Doe", "jon@example.com")
+	score := customer.MatchName("Alexander Doe")
+	assertMatchWithLogging(t, score, 0.8, "Very long name 'Jonathan Alexander Michael Robert William Doe' vs 'Alexander Doe'")
+
+	customer2 := NewCustomer("Jonathan Alexander Michael Robert William Doe", "jon@example.com")
+	score2 := customer2.MatchName("Michael Doe")
+	assertMatchWithLogging(t, score2, 0.8, "Very long name 'Jonathan Alexander Michael Robert William Doe' vs 'Michael Doe'")
 }

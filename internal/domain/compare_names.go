@@ -10,6 +10,12 @@ func CompareNames(name1, name2 string) float64 {
 		return 1.0
 	}
 
+	// Check for empty names and return a negative score for a no match
+	if len(name1) == 0 || len(name2) == 0 {
+		fmt.Printf("One of the names is empty, returning score -1.0\n")
+		return -1.0
+	}
+
 	tokens1 := TokenizeName(name1)
 	tokens2 := TokenizeName(name2)
 
@@ -31,7 +37,7 @@ func CompareNames(name1, name2 string) float64 {
 	isFirstNameExactMatch := false
 	if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
 		if firstNameScore >= 0.8 {
-			firstNameScore = 1.0
+			firstNameScore = 0.9
 			isFirstNameExactMatch = true
 		}
 	}
@@ -47,7 +53,7 @@ func CompareNames(name1, name2 string) float64 {
 	isLastNameExactMatch := false
 	if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
 		if lastNameScore >= 0.8 {
-			lastNameScore = 1.0
+			lastNameScore = 0.9
 			isLastNameExactMatch = true
 		}
 	}
@@ -71,8 +77,8 @@ func CompareNames(name1, name2 string) float64 {
 			fmt.Printf("Comparing middle names '%s' -> '%s', Phonetic: (%s, %s) vs (%s, %s)\n", middleName1, middleName2, primary1, alternate1, primary2, alternate2)
 
 			if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
-				if middleNameScore >= 0.8 {
-					middleNameScore = 1.0
+				if middleNameScore >= 0.8 { // Allow slight differences
+					middleNameScore = 0.9 // Apply smaller penalty
 				}
 			}
 			middleNameScore *= 0.2 // Apply lower weight for middle names
