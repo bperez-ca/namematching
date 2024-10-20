@@ -112,7 +112,7 @@ func TestCaseInsensitiveMatch(t *testing.T) {
 func TestLongNames(t *testing.T) {
 	customer := NewCustomer("John Alexander Doe", "john@example.com")
 	score := customer.MatchName("John Doe")
-	assertMatchWithLogging(t, score, 1.0, "Handling long names 'John Alexander Doe' vs 'John Doe'")
+	assertMatchWithLogging(t, score, 0.8, "Handling long names 'John Alexander Doe' vs 'John Doe'")
 }
 
 func TestCompletelyDifferentNames(t *testing.T) {

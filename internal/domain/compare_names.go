@@ -14,41 +14,75 @@ func CompareNames(name1, name2 string) float64 {
 	tokens2 := TokenizeName(name2)
 
 	totalScore := 0.0
-	maxTokens := maxIntegers(len(tokens1), len(tokens2)) // maxTokens is an integer now
 
-	for i := 0; i < maxTokens; i++ { // Loop works with integers
-		var token1, token2 string
+	// Ensure we compare first and last names properly by treating middle names as optional
+	firstName1 := tokens1[0]
+	lastName1 := tokens1[len(tokens1)-1]
 
-		if i < len(tokens1) {
-			token1 = tokens1[i]
+	firstName2 := tokens2[0]
+	lastName2 := tokens2[len(tokens2)-1]
+
+	// Compare first names
+	primary1, alternate1 := PhoneticMatch(firstName1)
+	primary2, alternate2 := PhoneticMatch(firstName2)
+	firstNameScore := LevenshteinSimilarity(firstName1, firstName2)
+	fmt.Printf("Comparing first names '%s' -> '%s', Phonetic: (%s, %s) vs (%s, %s)\n", firstName1, firstName2, primary1, alternate1, primary2, alternate2)
+
+	isFirstNameExactMatch := false
+	if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
+		if firstNameScore >= 0.8 {
+			firstNameScore = 1.0
+			isFirstNameExactMatch = true
 		}
-		if i < len(tokens2) {
-			token2 = tokens2[i]
+	}
+	firstNameScore *= 0.4 // Apply weight for first names
+	fmt.Printf("First name score after weighting: %.2f\n", firstNameScore)
+
+	// Compare last names
+	primary1, alternate1 = PhoneticMatch(lastName1)
+	primary2, alternate2 = PhoneticMatch(lastName2)
+	lastNameScore := LevenshteinSimilarity(lastName1, lastName2)
+	fmt.Printf("Comparing last names '%s' -> '%s', Phonetic: (%s, %s) vs (%s, %s)\n", lastName1, lastName2, primary1, alternate1, primary2, alternate2)
+
+	isLastNameExactMatch := false
+	if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
+		if lastNameScore >= 0.8 {
+			lastNameScore = 1.0
+			isLastNameExactMatch = true
 		}
+	}
+	lastNameScore *= 0.4 // Apply weight for last names
+	fmt.Printf("Last name score after weighting: %.2f\n", lastNameScore)
 
-		// Skip comparison if one of the tokens is empty (mismatched number of tokens)
-		if token1 == "" || token2 == "" {
-			continue
-		}
+	// If both first and last names are exact matches, treat it as a perfect match (score = 1.0)
+	if isFirstNameExactMatch && isLastNameExactMatch {
+		totalScore = 1.0
+		fmt.Printf("Exact match for both first and last names, setting total score to 1.0\n")
+	} else {
+		// Middle name handling (only if both names have middle names)
+		middleNameScore := 0.0
+		if len(tokens1) > 2 && len(tokens2) > 2 { // Both names have a middle name
+			middleName1 := tokens1[1]
+			middleName2 := tokens2[1]
 
-		primary1, alternate1 := PhoneticMatch(token1)
-		primary2, alternate2 := PhoneticMatch(token2)
+			primary1, alternate1 = PhoneticMatch(middleName1)
+			primary2, alternate2 = PhoneticMatch(middleName2)
+			middleNameScore = LevenshteinSimilarity(middleName1, middleName2)
+			fmt.Printf("Comparing middle names '%s' -> '%s', Phonetic: (%s, %s) vs (%s, %s)\n", middleName1, middleName2, primary1, alternate1, primary2, alternate2)
 
-		fmt.Printf("Comparing '%s' -> '%s', Phonetic: (%s, %s) vs (%s, %s)\n", token1, token2, primary1, alternate1, primary2, alternate2)
-
-		tokenScore := LevenshteinSimilarity(token1, token2)
-		fmt.Printf("Levenshtein score for '%s' vs '%s' = %.2f\n", token1, token2, tokenScore)
-
-		if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
-			if tokenScore >= 0.8 {
-				tokenScore = 1.0
+			if primary1 == primary2 || alternate1 == alternate2 || primary1 == alternate2 || alternate1 == primary2 {
+				if middleNameScore >= 0.8 {
+					middleNameScore = 1.0
+				}
 			}
+			middleNameScore *= 0.2 // Apply lower weight for middle names
+			fmt.Printf("Middle name score after weighting: %.2f\n", middleNameScore)
 		}
 
-		totalScore += tokenScore
+		// Total score is based on first name, last name, and middle name (if present)
+		totalScore = firstNameScore + lastNameScore + middleNameScore
 	}
 
-	finalScore := totalScore / float64(maxTokens)
-	fmt.Printf("Final name match score for '%s' vs '%s' = %.2f\n", name1, name2, finalScore)
-	return finalScore
+	fmt.Printf("Final total score: %.2f\n", totalScore)
+	return totalScore
 }
