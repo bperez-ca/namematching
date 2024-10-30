@@ -9,8 +9,8 @@ import (
 // and ensures case-insensitive comparison.
 func TokenizeName(name string) []string {
 	// Replace hyphens and apostrophes with spaces
-	name = strings.ReplaceAll(name, "-", " ")
-	name = strings.ReplaceAll(name, "'", " ")
+	//name = strings.ReplaceAll(name, "-", " ")
+	name = strings.ReplaceAll(name, "'", "")
 
 	// Remove accents and convert to lowercase for case-insensitive matching
 	name = NormalizeName(name)

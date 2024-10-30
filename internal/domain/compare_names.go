@@ -18,6 +18,16 @@ func CompareNames(name1, name2 string) float64 {
 		return -1.0
 	}
 
+	// Normalize both names
+	normalized1 := NormalizeName(name1)
+	normalized2 := NormalizeName(name2)
+
+	// Step 1: Compare entire normalized names directly (to handle cases like "YukiMatsuda" vs "Yuki Matsuda")
+	if normalized1 == normalized2 {
+		fmt.Printf("Exact match for full names '%s' and '%s'\n", name1, name2)
+		return 1.0
+	}
+
 	tokens1 := TokenizeName(name1)
 	tokens2 := TokenizeName(name2)
 
@@ -45,9 +55,9 @@ func CompareNames(name1, name2 string) float64 {
 		totalScore = 1.0
 		fmt.Printf("Exact match for both first and last names, setting total score to 1.0\n")
 	} else {
-		// Middle name handling (only if both names have middle names)
+		// Names in between the first and the last name
 		fullTokenScore := 0.0
-		if len(tokens1) > 2 || len(tokens2) > 2 { // Both names have a middle name
+		if len(tokens1) > 2 || len(tokens2) > 2 {
 			for _, token1 := range tokens1 {
 				bestScore := 0.0
 				for _, token2 := range tokens2 {
@@ -58,9 +68,9 @@ func CompareNames(name1, name2 string) float64 {
 				}
 				fullTokenScore += bestScore
 			}
-			//fullTokenScore  += tokenScore
 		}
 
+		fmt.Printf("!!!---!!! Scores fist: '%.2f', last: '%.2f', fullToken: '%.2f'", firstNameScore, lastNameScore, fullTokenScore)
 		// Total score is based on first name, last name, and middle name (if present)
 		totalScore = firstNameScore + lastNameScore + fullTokenScore
 	}

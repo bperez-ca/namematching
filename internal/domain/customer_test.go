@@ -97,10 +97,21 @@ func TestNamesWithHyphens(t *testing.T) {
 	assertMatchWithLogging(t, score, 1.0, "Handling hyphens in 'Jean-Pierre' vs 'Jean Pierre'")
 }
 
-func TestNamesWithApostrophes(t *testing.T) {
+func TestSpecialCharacterHandlingWithAllCases(t *testing.T) {
+	// Test case for "O'Conner" and "OConner"
 	customer := NewCustomer("O'Conner", "oconner@example.com")
-	score := customer.MatchName("O Conner")
-	assertMatchWithLogging(t, score, 1.0, "Handling apostrophes in 'O'Conner' vs 'O Conner'")
+	score := customer.MatchName("OConner")
+	assertMatchWithLogging(t, score, 0.9, "Special character handling for 'O'Conner' and 'OConner'")
+
+	// Test case for "O'Conner" and "O Conner"
+	customer2 := NewCustomer("O'Conner", "oconner@example.com")
+	score2 := customer2.MatchName("O Conner")
+	assertMatchWithLogging(t, score2, 0.9, "Special character handling for 'O'Conner' and 'O Conner'")
+
+	// Test case for "OConner" and "O Conner"
+	customer3 := NewCustomer("OConner", "oconner@example.com")
+	score3 := customer3.MatchName("O Conner")
+	assertMatchWithLogging(t, score3, 0.9, "Special character handling for 'OConner' and 'O Conner'")
 }
 
 func TestCaseInsensitiveMatch(t *testing.T) {
@@ -221,4 +232,46 @@ func TestLongNameWithVariousSpecialCharacters(t *testing.T) {
 	customer := NewCustomer("Brayan@#*!|~Ferney%$Perez@#Moreno", "brayan@example.com")
 	score := customer.MatchName("Brayan Perez")
 	assertMatchWithLogging(t, score, 0.8, "Very long name 'Brayan@#*!|~Ferney%$Perez@#Moreno' vs 'Brayan Perez'")
+}
+
+func TestEthnicNamesWithSpecialCharacters(t *testing.T) {
+	// Test case for Indian name with spaces and special characters
+	customer := NewCustomer("Rajesh Kumar", "rajesh.kumar@example.com")
+	score := customer.MatchName("Rajesh Kumar")
+	assertMatchWithLogging(t, score, 1.0, "Exact match for Indian name 'Rajesh Kumar'")
+
+	// Test case for Indian name with missing last name
+	customer2 := NewCustomer("Rajesh Kumar", "rajesh.kumar@example.com")
+	score2 := customer2.MatchName("Rajesh")
+	assertMatchWithLogging(t, score2, 0.8, "Indian name 'Rajesh Kumar' vs 'Rajesh'")
+
+	// Test case for Japanese name with space between first and last name
+	customer3 := NewCustomer("Yuki Matsuda", "yuki.matsuda@example.jp")
+	score3 := customer3.MatchName("Yuki Matsuda")
+	assertMatchWithLogging(t, score3, 1.0, "Exact match for Japanese name 'Yuki Matsuda'")
+
+	// Test case for Japanese name without space
+	customer4 := NewCustomer("YukiMatsuda", "yuki.matsuda@example.jp")
+	score4 := customer4.MatchName("Yuki Matsuda")
+	assertMatchWithLogging(t, score4, 0.9, "Japanese name 'YukiMatsuda' vs 'Yuki Matsuda'")
+
+	// Test case for Brazilian name with accent
+	customer5 := NewCustomer("José da Silva", "jose.silva@example.com")
+	score5 := customer5.MatchName("Jose da Silva")
+	assertMatchWithLogging(t, score5, 1.0, "Brazilian name 'José da Silva' vs 'Jose da Silva'")
+
+	// Test case for Brazilian name with missing first name
+	customer6 := NewCustomer("José da Silva", "jose.silva@example.com")
+	score6 := customer6.MatchName("da Silva")
+	assertMatchWithLogging(t, score6, 0.8, "Brazilian name 'José da Silva' vs 'da Silva'")
+
+	// Test case for Brazilian name with special characters
+	customer7 := NewCustomer("Ana-Maria", "ana.maria@example.com")
+	score7 := customer7.MatchName("Ana Maria")
+	assertMatchWithLogging(t, score7, 0.9, "Brazilian name with hyphen 'Ana-Maria' vs 'Ana Maria'")
+
+	// Test case for Japanese name with special characters
+	customer8 := NewCustomer("Takashi O’Nishi", "takashi.nishi@example.jp")
+	score8 := customer8.MatchName("Takashi ONishi")
+	assertMatchWithLogging(t, score8, 0.9, "Japanese name with apostrophe 'Takashi O’Nishi' vs 'Takashi ONishi'")
 }

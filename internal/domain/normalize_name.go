@@ -29,9 +29,6 @@ func NormalizeName(name string) string {
 	for _, r := range normalized {
 		if unicode.IsLetter(r) || unicode.IsSpace(r) || r == '-' {
 			sb.WriteRune(r) // Keep letters, spaces, and hyphens
-		} else if r == '\'' {
-			// Skip apostrophes entirely (treat "O'Conner" as "OConner")
-			continue
 		} else {
 			sb.WriteRune(' ') // Replace other special characters with spaces
 		}
